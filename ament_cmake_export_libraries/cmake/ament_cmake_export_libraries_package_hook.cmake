@@ -19,7 +19,7 @@
 
 # generate and register extra file for libraries
 include(GNUInstallDirs)
-ament_package_install_prefix(_AMENT_EXPORT_LIBRARIES_PREFIX "\${${PROJECT_NAME}_DIR}/../../..")
+ament_package_install_prefix(_AMENT_EXPORT_LIBRARIES_PREFIX)
 # An absolute CMAKE_INSTALL_LIBDIR can be outside the install prefix, for
 # instance when libraries and CMake files are installed to separate
 # locations, so it is used as is.

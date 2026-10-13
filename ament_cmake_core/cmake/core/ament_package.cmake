@@ -25,37 +25,42 @@ if(AMENT_CMAKE_CONFIG_INSTALL_PREFIX AND NOT IS_ABSOLUTE "${AMENT_CMAKE_CONFIG_I
     "path, got '${AMENT_CMAKE_CONFIG_INSTALL_PREFIX}'")
 endif()
 
+# Where the current package's CMake config files are installed. Packages that
+# ship CMake modules next to their config install them here, so that they are
+# found wherever the config goes:
 #
-# Get the install destination of the current package's CMake config files.
+#   install(DIRECTORY cmake/ DESTINATION ${AMENT_CMAKE_CONFIG_INSTALL_DIR})
 #
-# :param var: the output variable name
-# :type var: string
-#
-function(ament_package_config_install_dir var)
+function(_ament_package_config_install_dir var)
   if(AMENT_CMAKE_CONFIG_INSTALL_PREFIX)
     set(${var} "${AMENT_CMAKE_CONFIG_INSTALL_PREFIX}/share/${PROJECT_NAME}/cmake" PARENT_SCOPE)
   else()
     set(${var} "share/${PROJECT_NAME}/cmake" PARENT_SCOPE)
   endif()
 endfunction()
+_ament_package_config_install_dir(AMENT_CMAKE_CONFIG_INSTALL_DIR)
 
 #
 # Get how a generated CMake config file should refer to the install prefix:
-# by the given path relative to the config file's own location, or by
-# absolute path when AMENT_CMAKE_CONFIG_INSTALL_PREFIX puts the config
-# files elsewhere.
+# relative to the config file's own location, or by absolute path when
+# AMENT_CMAKE_CONFIG_INSTALL_PREFIX puts the config files elsewhere.
 #
 # :param var: the output variable name
 # :type var: string
-# :param relative: the install prefix relative to the installed config file,
-#   such as "\${${PROJECT_NAME}_DIR}/../../.."
-# :type relative: string
+# :param ARGN: optionally, the install prefix relative to the file that will
+#   use it, for a file that isn't installed next to the package's config;
+#   defaults to "\${${PROJECT_NAME}_DIR}/../../.."
+# :type ARGN: string
 #
-function(ament_package_install_prefix var relative)
+# @public
+#
+function(ament_package_install_prefix var)
   if(AMENT_CMAKE_CONFIG_INSTALL_PREFIX)
     set(${var} "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
+  elseif(ARGC GREATER 1)
+    set(${var} "${ARGV1}" PARENT_SCOPE)
   else()
-    set(${var} "${relative}" PARENT_SCOPE)
+    set(${var} "\${${PROJECT_NAME}_DIR}/../../.." PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -126,7 +131,7 @@ function(_ament_package)
   set(PACKAGE_VERSION "${${PROJECT_NAME}_VERSION}")
   set(PACKAGE_DEPRECATED "${${PROJECT_NAME}_DEPRECATED}")
 
-  ament_package_config_install_dir(config_install_dir)
+  _ament_package_config_install_dir(config_install_dir)
 
   # expand and install config extras
   set(PACKAGE_CONFIG_EXTRA_FILES "")
