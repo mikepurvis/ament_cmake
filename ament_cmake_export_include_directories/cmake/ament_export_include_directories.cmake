@@ -37,11 +37,14 @@ macro(ament_export_include_directories)
       if(NOT IS_ABSOLUTE "${_arg}")
         # prefix relative paths with CMAKE_INSTALL_PREFIX
         # while avoiding to embed any absolute path
-        ament_package_install_prefix(_prefix "\${${PROJECT_NAME}_DIR}/../../..")
+        ament_package_install_prefix(_prefix)
         set(_arg "${_prefix}/${_arg}")
         list_append_unique(_AMENT_EXPORT_RELATIVE_INCLUDE_DIRECTORIES "${_arg}")
       else()
-        if(NOT IS_DIRECTORY "${_arg}")
+        # an absolute install destination, such as an absolute
+        # CMAKE_INSTALL_INCLUDEDIR, is only created at install time
+        _ament_cmake_export_include_directories_is_install_destination(_is_install "${_arg}")
+        if(NOT _is_install AND NOT IS_DIRECTORY "${_arg}")
           message(WARNING
             "ament_export_include_directories() package '${PROJECT_NAME}' "
             "exports the include directory '${_arg}' which doesn't exist")
@@ -51,3 +54,23 @@ macro(ament_export_include_directories)
     endforeach()
   endif()
 endmacro()
+
+# Whether a path is at or below one of the places this package installs to.
+function(_ament_cmake_export_include_directories_is_install_destination var path)
+  set(_destinations "${CMAKE_INSTALL_PREFIX}" "${AMENT_CMAKE_CONFIG_INSTALL_PREFIX}")
+  if(IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
+    list(APPEND _destinations "${CMAKE_INSTALL_INCLUDEDIR}")
+  endif()
+  foreach(_destination ${_destinations})
+    string(REGEX REPLACE "/+$" "" _destination "${_destination}")
+    if(_destination)
+      string(LENGTH "${_destination}/" _length)
+      string(SUBSTRING "${path}/" 0 ${_length} _head)
+      if(_head STREQUAL "${_destination}/")
+        set(${var} TRUE PARENT_SCOPE)
+        return()
+      endif()
+    endif()
+  endforeach()
+  set(${var} FALSE PARENT_SCOPE)
+endfunction()
