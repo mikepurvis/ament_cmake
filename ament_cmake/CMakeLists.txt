@@ -21,4 +21,9 @@ ament_export_dependencies(
   "ament_cmake_version"
 )
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_test REQUIRED)
+  add_subdirectory(test)
+endif()
+
 ament_package()

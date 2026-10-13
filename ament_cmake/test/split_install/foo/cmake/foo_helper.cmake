@@ -1,0 +1,1 @@
+set(foo_HELPER_LOADED TRUE)
