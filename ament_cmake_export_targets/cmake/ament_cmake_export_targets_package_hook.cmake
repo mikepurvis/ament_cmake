@@ -24,11 +24,10 @@ list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS "${_generated_extra_file}")
 
 # install export files for targets
 if(NOT _AMENT_CMAKE_EXPORT_TARGETS STREQUAL "")
-  ament_package_config_install_dir(_config_install_dir)
   foreach(_target ${_AMENT_CMAKE_EXPORT_TARGETS})
     install(
       EXPORT "${_target}"
-      DESTINATION ${_config_install_dir}
+      DESTINATION ${AMENT_INSTALL_CMAKEDIR}
       NAMESPACE "${_AMENT_CMAKE_EXPORT_TARGETS_NAMESPACE}"
       FILE "${_target}Export.cmake"
     )

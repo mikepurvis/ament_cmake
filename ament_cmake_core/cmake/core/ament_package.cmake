@@ -25,37 +25,38 @@ if(AMENT_CMAKE_CONFIG_INSTALL_PREFIX AND NOT IS_ABSOLUTE "${AMENT_CMAKE_CONFIG_I
     "path, got '${AMENT_CMAKE_CONFIG_INSTALL_PREFIX}'")
 endif()
 
+# Where this package's CMake config files are installed, for packages that
+# install further CMake modules alongside them:
 #
-# Get the install destination of the current package's CMake config files.
+#   install(DIRECTORY cmake/ DESTINATION ${AMENT_INSTALL_CMAKEDIR})
 #
-# :param var: the output variable name
-# :type var: string
-#
-function(ament_package_config_install_dir var)
-  if(AMENT_CMAKE_CONFIG_INSTALL_PREFIX)
-    set(${var} "${AMENT_CMAKE_CONFIG_INSTALL_PREFIX}/share/${PROJECT_NAME}/cmake" PARENT_SCOPE)
-  else()
-    set(${var} "share/${PROJECT_NAME}/cmake" PARENT_SCOPE)
-  endif()
-endfunction()
+# Set when ament_cmake_core is found, so it is available before
+# ament_package(), which is usually called last.
+if(AMENT_CMAKE_CONFIG_INSTALL_PREFIX)
+  set(AMENT_INSTALL_CMAKEDIR "${AMENT_CMAKE_CONFIG_INSTALL_PREFIX}/share/${PROJECT_NAME}/cmake")
+else()
+  set(AMENT_INSTALL_CMAKEDIR "share/${PROJECT_NAME}/cmake")
+endif()
 
 #
 # Get how a generated CMake config file should refer to the install prefix:
-# by the given path relative to the config file's own location, or by
-# absolute path when AMENT_CMAKE_CONFIG_INSTALL_PREFIX puts the config
-# files elsewhere.
+# relative to the config file's own location, or by absolute path when
+# AMENT_CMAKE_CONFIG_INSTALL_PREFIX puts the config files elsewhere.
 #
 # :param var: the output variable name
 # :type var: string
-# :param relative: the install prefix relative to the installed config file,
-#   such as "\${${PROJECT_NAME}_DIR}/../../.."
+# :param relative: optional, the install prefix relative to the installed
+#   file that will use it; defaults to "\${<package>_DIR}/../../..", which is
+#   right for anything evaluated from the package's CMake config directory
 # :type relative: string
 #
-function(ament_package_install_prefix var relative)
+function(ament_package_install_prefix var)
   if(AMENT_CMAKE_CONFIG_INSTALL_PREFIX)
     set(${var} "${CMAKE_INSTALL_PREFIX}" PARENT_SCOPE)
+  elseif(ARGC GREATER 1)
+    set(${var} "${ARGV1}" PARENT_SCOPE)
   else()
-    set(${var} "${relative}" PARENT_SCOPE)
+    set(${var} "\${${PROJECT_NAME}_DIR}/../../.." PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -126,8 +127,6 @@ function(_ament_package)
   set(PACKAGE_VERSION "${${PROJECT_NAME}_VERSION}")
   set(PACKAGE_DEPRECATED "${${PROJECT_NAME}_DEPRECATED}")
 
-  ament_package_config_install_dir(config_install_dir)
-
   # expand and install config extras
   set(PACKAGE_CONFIG_EXTRA_FILES "")
   set(extras)
@@ -170,7 +169,7 @@ function(_ament_package)
     if(is_cmake)
       install(FILES
         ${extra}
-        DESTINATION ${config_install_dir}
+        DESTINATION ${AMENT_INSTALL_CMAKEDIR}
       )
       get_filename_component(extra_filename "${extra}" NAME)
       list(APPEND PACKAGE_CONFIG_EXTRA_FILES "${extra_filename}")
@@ -199,7 +198,7 @@ function(_ament_package)
   install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/ament_cmake_core/${PROJECT_NAME}Config.cmake
     ${CMAKE_CURRENT_BINARY_DIR}/ament_cmake_core/${PROJECT_NAME}Config-version.cmake
-    DESTINATION ${config_install_dir}
+    DESTINATION ${AMENT_INSTALL_CMAKEDIR}
   )
 
   # install package.xml
