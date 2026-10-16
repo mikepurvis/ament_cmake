@@ -67,8 +67,9 @@ macro(ament_auto_package)
 
   # export and install include directory of this package if it has one
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include")
-    ament_export_include_directories("include/${PROJECT_NAME}")
-    install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
+    include(GNUInstallDirs)
+    ament_export_include_directories("${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
+    install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
   endif()
 
   # export and install all libraries

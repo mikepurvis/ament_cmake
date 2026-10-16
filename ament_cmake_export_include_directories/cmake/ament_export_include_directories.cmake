@@ -37,11 +37,23 @@ macro(ament_export_include_directories)
       if(NOT IS_ABSOLUTE "${_arg}")
         # prefix relative paths with CMAKE_INSTALL_PREFIX
         # while avoiding to embed any absolute path
-        ament_package_install_prefix(_prefix "\${${PROJECT_NAME}_DIR}/../../..")
+        ament_package_install_prefix(_prefix)
         set(_arg "${_prefix}/${_arg}")
         list_append_unique(_AMENT_EXPORT_RELATIVE_INCLUDE_DIRECTORIES "${_arg}")
       else()
-        if(NOT IS_DIRECTORY "${_arg}")
+        # An install destination, such as an absolute CMAKE_INSTALL_INCLUDEDIR,
+        # only exists once the package is installed. The generated config
+        # checks it whenever the package is found, so don't warn here.
+        set(_is_install_destination FALSE)
+        foreach(_destination "${CMAKE_INSTALL_PREFIX}" "${CMAKE_INSTALL_INCLUDEDIR}")
+          if(IS_ABSOLUTE "${_destination}")
+            string(FIND "${_arg}/" "${_destination}/" _position)
+            if(_position EQUAL 0)
+              set(_is_install_destination TRUE)
+            endif()
+          endif()
+        endforeach()
+        if(NOT _is_install_destination AND NOT IS_DIRECTORY "${_arg}")
           message(WARNING
             "ament_export_include_directories() package '${PROJECT_NAME}' "
             "exports the include directory '${_arg}' which doesn't exist")
