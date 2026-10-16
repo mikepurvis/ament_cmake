@@ -33,6 +33,10 @@
   <build_export_depend>ament_cmake_test</build_export_depend>
   <build_export_depend>ament_cmake_version</build_export_depend>
 
+  <test_depend>ament_cmake_export_include_directories</test_depend>
+  <test_depend>ament_cmake_export_libraries</test_depend>
+  <test_depend>ament_cmake_export_targets</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

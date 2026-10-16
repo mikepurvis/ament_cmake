@@ -22,3 +22,8 @@ ament_export_dependencies(
 )
 
 ament_package()
+
+include(CTest)
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()
