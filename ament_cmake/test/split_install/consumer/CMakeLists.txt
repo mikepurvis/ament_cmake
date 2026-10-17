@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 project(consumer NONE)
 
 # Fails configuration unless foo's libraries resolve under
-# EXPECTED_LIB_PREFIX and its headers under EXPECTED_INCLUDE_DIR.
+# EXPECTED_LIB_PREFIX, its headers under EXPECTED_INCLUDE_DIR, and its share
+# directory to EXPECTED_DATADIR.
 find_package(foo REQUIRED)
 
 function(expect_under what path prefix)
@@ -24,3 +25,8 @@ if(NOT location)
   get_target_property(location foo::foo IMPORTED_LOCATION_RELEASE)
 endif()
 expect_under("foo::foo location" "${location}" "${EXPECTED_LIB_PREFIX}")
+
+get_filename_component(expected_datadir "${EXPECTED_DATADIR}" REALPATH)
+if(NOT foo_DATADIR STREQUAL expected_datadir OR NOT EXISTS "${foo_DATADIR}/package.xml")
+  message(FATAL_ERROR "foo_DATADIR is '${foo_DATADIR}', expected '${expected_datadir}' containing package.xml")
+endif()

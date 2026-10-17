@@ -35,6 +35,12 @@ endif()
 # flag package as ament-based to distinguish it after being find_package()-ed
 set(@PROJECT_NAME@_FOUND_AMENT_PACKAGE TRUE)
 
+# where the package's share directory (package.xml, resources, interface
+# definitions) is installed; it need not be next to this file when the CMake
+# config files are installed apart (AMENT_CMAKE_CONFIG_INSTALL_PREFIX)
+get_filename_component(@PROJECT_NAME@_DATADIR
+  "@PACKAGE_INSTALL_PREFIX@/share/@PROJECT_NAME@" ABSOLUTE)
+
 # include all config extra files
 set(_extras "@PACKAGE_CONFIG_EXTRA_FILES@")
 foreach(_extra ${_extras})

@@ -26,11 +26,12 @@ function(install_foo build_dir)
   run("${CMAKE_COMMAND}" --install "${build_dir}")
 endfunction()
 
-function(consume build_dir prefix_path lib_prefix include_dir)
+function(consume build_dir prefix_path lib_prefix include_dir datadir)
   run("${CMAKE_COMMAND}" -S "${FIXTURE_DIR}/consumer" -B "${build_dir}"
     "-DCMAKE_PREFIX_PATH=${prefix_path}"
     "-DEXPECTED_LIB_PREFIX=${lib_prefix}"
-    "-DEXPECTED_INCLUDE_DIR=${include_dir}")
+    "-DEXPECTED_INCLUDE_DIR=${include_dir}"
+    "-DEXPECTED_DATADIR=${datadir}")
 endfunction()
 
 file(REMOVE_RECURSE "${WORK_DIR}")
@@ -50,10 +51,11 @@ file(GLOB_RECURSE stray_cmake_files "${out}/*.cmake")
 if(stray_cmake_files)
   message(FATAL_ERROR "CMake files were installed under ${out}: ${stray_cmake_files}")
 endif()
-consume("${WORK_DIR}/consume-split" "${dev}" "${out}/lib/" "${dev}/include")
+consume("${WORK_DIR}/consume-split" "${dev}" "${out}/lib/" "${dev}/include"
+  "${out}/share/foo")
 
 # Default install, relocated
 install_foo("${WORK_DIR}/build-default" "-DCMAKE_INSTALL_PREFIX=${WORK_DIR}/default")
 file(RENAME "${WORK_DIR}/default" "${WORK_DIR}/moved")
 consume("${WORK_DIR}/consume-moved" "${WORK_DIR}/moved"
-  "${WORK_DIR}/moved/" "${WORK_DIR}/moved/include")
+  "${WORK_DIR}/moved/" "${WORK_DIR}/moved/include" "${WORK_DIR}/moved/share/foo")

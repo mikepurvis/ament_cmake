@@ -180,6 +180,7 @@ function(_ament_package)
   endforeach()
 
   # generate CMake config file
+  ament_package_install_prefix(PACKAGE_INSTALL_PREFIX)
   stamp("${ament_cmake_core_DIR}/core/templates/nameConfig.cmake.in")
   configure_file(
     ${ament_cmake_core_DIR}/core/templates/nameConfig.cmake.in
